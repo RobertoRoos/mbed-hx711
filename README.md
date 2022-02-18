@@ -15,6 +15,8 @@ Add the library to your project using mbed CLI (or directly through online IDE):
 
 ## Example
 
+### Normal (blocking)
+
 ```cpp
 #include "mbed.h"
 #include "HX711.h"
@@ -28,6 +30,31 @@ int main(void) {
         loadcell.powerDown();
 
         wait(3);
+    }
+}
+```
+
+### Non-Blocking
+
+```cpp
+#include "mbed.h"
+#include "HX711.h"
+
+HX711 loadcell(D7, D6);
+
+int main(void) {
+
+    loadcell.powerUp();
+
+    float value = 0.0f;
+
+    while(1) {
+        
+        if (loadcell.isReady()) {
+            value = loadcell.getUnits(1);
+        }
+
+        wait(0.01f);
     }
 }
 ```

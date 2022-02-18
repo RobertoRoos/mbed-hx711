@@ -28,16 +28,9 @@
 
 #include "mbed.h"
 
-/**
- * We do not keep DigitalOuts as a class properties, because the data 
- * and clock pins change types depending on the operation.
- * So instead we just store the pin-names and allocate digital inputs and 
- * outputs where needed.
- */
-HX711::HX711(PinName pin_data, PinName pin_sck, uint8_t gain)
+HX711::HX711(PinName pin_data, PinName pin_sck, uint8_t gain) :
+    _data(pin_data), _sck(pin_sck)
 {
-    _pin_data = pin_data;
-    _pin_sck = pin_sck;
 
     _offset = 0;
     _scale = 1.0f;
@@ -46,9 +39,8 @@ HX711::HX711(PinName pin_data, PinName pin_sck, uint8_t gain)
 }
 
 bool HX711::isReady() {
-    DigitalIn data(_pin_data);
 
-    return data == 0;
+    return _data.read() == 0;
 }
 
 int HX711::readAverage(uint8_t times) {
@@ -64,29 +56,27 @@ int HX711::read() {
     int buffer;
     buffer = 0;
 
-    DigitalOut sck(_pin_sck);
-    DigitalIn data(_pin_data);
-
     waitReady();
 
     // next steps are timing-dependents
     CriticalSectionLock::enable();
 
     for (uint8_t i = 24; i--;) {
-        sck = 1;
+        _sck.write(1);
         buffer = buffer << 1;
 
-        if (data.read()) {
+        
+        if (_data.read()) {
             buffer++;
         }
 
-        sck = 0;
+        _sck.write(0);
     }
 
     // set gain for next read
     for (int i = 0; i < _gain; i++) {
-        sck = 1;
-        sck = 0;
+        _sck.write(1);
+        _sck.write(0);
     }
 
     // reading done
@@ -145,20 +135,17 @@ void HX711::setGain(uint8_t gain) {
             _gain = 2;
             break;
     }
-    DigitalOut sck(_pin_sck);
-    sck = 0;
+    _sck.write(0);
     read();
 }
 
 void HX711::powerDown() {
-    DigitalOut sck(_pin_sck);
-    sck = 0;
-    sck = 1;
+    _sck.write(0);
+    _sck.write(1);
 }
 
 void HX711::powerUp() {
-    DigitalOut sck(_pin_sck);
-    sck = 0;
+    _sck.write(0);
 }
 
 void HX711::tare(uint8_t times) {

@@ -45,7 +45,7 @@
  *
  * HX711 loadcell(D7, D6);
  *
- * int main(void) {
+ * int main() {
  *   while(1) {
  *       loadcell.powerUp();
  *       printf("Weight = %.1f\r\n", loadcell.getUnits(10));
@@ -82,7 +82,7 @@ public:
      * 
      * @return int 
      */
-    int read(void);
+    int read();
 
     /**
      * @brief Wait until the sensor is ready
@@ -156,8 +156,8 @@ public:
 
 private:
 
-    PinName _pin_data;
-    PinName _pin_sck;
+    DigitalIn _data;
+    DigitalOut _sck;
     
     int _offset;
     float _scale;
